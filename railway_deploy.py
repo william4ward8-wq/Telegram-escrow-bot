@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""
+Direct Railway deployment runner
+This file runs the bot directly with our latest fixes
+"""
+import os
+import sys
+
+def main():
+    """Run the bot with proper error handling"""
+    try:
+        print("🚀 Starting Telegram Escrow Bot (Latest Version)...")
+        print("✅ Using database:", os.environ.get("DATABASE_URL", "Not configured")[:20] + "...")
+        
+        # Import the main module and bot initialization
+        import main
+        from bot import initialize_bot_webhook
+        
+        # Initialize bot for webhook mode
+        print("🔧 Initializing Telegram bot for webhook mode...")
+        if not initialize_bot_webhook(main.app):
+            print("❌ Failed to initialize bot")
+            exit(1)
+        
+        # Use dynamic PORT for production deployments (Railway sets this automatically)
+        port = int(os.environ.get("PORT", 5000))
+        
+        # Ensure we're using the correct host binding for Railway
+        host = '0.0.0.0'
+        
+        print(f"🌐 Starting server on {host}:{port}")
+        print("📡 Railway deployment mode - webhook ready")
+        main.app.run(host=host, port=port, debug=False, use_reloader=False)
+        
+    except Exception as e:
+        print(f"❌ Failed to start bot: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
